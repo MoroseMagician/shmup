@@ -4,7 +4,7 @@ import pygame
 import load_assets
 
 pygame.init()
-size = 1280, 720
+size = width, height = 1280, 720
 screen = pygame.display.set_mode(size)
 
 ship = load_assets.load_image("ship.png")
@@ -25,13 +25,13 @@ while True:
     if modifiers & pygame.KMOD_LSHIFT:
         speed = 2
     
-    if keys[pygame.K_UP]:
+    if keys[pygame.K_UP] and ship_rect[1] > 0:
         ship_rect = ship_rect.move(0,-speed)
-    if keys[pygame.K_DOWN]:
+    if keys[pygame.K_DOWN] and ship_rect[1] + ship_rect[2] < height:
         ship_rect = ship_rect.move(0,speed)
-    if keys[pygame.K_LEFT]:
+    if keys[pygame.K_LEFT] and ship_rect[0] > 0:
         ship_rect = ship_rect.move(-speed,0)
-    if keys[pygame.K_RIGHT]:
+    if keys[pygame.K_RIGHT] and ship_rect[0] + ship_rect[3] < width:
         ship_rect = ship_rect.move(speed,0)
 
     screen.fill([0,0,0])
