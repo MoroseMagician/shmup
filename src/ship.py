@@ -1,10 +1,10 @@
 from load_assets import load_image
+import pygame
 import bullet
 
 class Ship:
     def __init__(self, screenwidth, screenheight, speed):
-        self.image = load_image("ship.png")
-        self.rect = self.image.get_rect()
+        self.rect = pygame.rect.Rect(0, 0, 32, 32)
         self.speed = speed
 
         #Starting position
@@ -27,5 +27,13 @@ class Ship:
     def move_down(self, modifier):
         self.rect.y += self.speed * modifier
     
+    def draw(self, surface):
+        pygame.draw.rect(surface, (20, 20, 255), self.rect)
+
     def shoot(self):
         print("blam!")
+
+    def explode(self):
+        None
+
+

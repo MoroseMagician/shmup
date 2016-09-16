@@ -1,5 +1,6 @@
 import os
 import pygame
+from random import randint
 
 def load_image(name):
     fullpath = os.path.join('assets', 'sprites', name)
@@ -19,8 +20,8 @@ def load_music(name):
 
     return music
 
-def load_font(name):
+def load_font(name, size):
     fullpath = os.path.join('assets', 'fonts', name)
-    font = pygame.font.Font(fullpath)
+    font = pygame.font.Font(fullpath, size)
 
     return font
