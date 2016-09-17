@@ -1,6 +1,7 @@
 import os
 import sys
 import ship
+import enemy
 import bullet
 import pygame
 import load_assets
@@ -54,6 +55,17 @@ offset = -height * 9
 
 bullets = pygame.sprite.Group()
 stars = pygame.sprite.Group()
+enemies = pygame.sprite.Group()
+
+enemies.add(enemy.SmallEnemy((0, -170), (2, 2), randint(1, 5), 50))
+enemies.add(enemy.SmallEnemy((0, -130), (2, 2), randint(1, 5), 80))
+enemies.add(enemy.SmallEnemy((0, -90), (2, 2), randint(1, 5), 110))
+enemies.add(enemy.SmallEnemy((0, -50), (2, 2), randint(1, 5), 140))
+enemies.add(enemy.SmallEnemy((width, -170), (-2, 2), randint(1, 5), 170))
+enemies.add(enemy.SmallEnemy((width, -130), (-2, 2), randint(1, 5), 200))
+enemies.add(enemy.SmallEnemy((width, -90), (-2, 2), randint(1, 5), 230))
+enemies.add(enemy.SmallEnemy((width, -50), (-2, 2), randint(1, 5), 260))
+
 
 while True:
 
@@ -68,7 +80,7 @@ while True:
     keyCheck(ship, keys, mods)
 
     rend = font.render("FPS: {}".format(timer.get_fps()), 1, (255,0,255))
-    boolets = font.render("boolets: {}".format(len(bullets.sprites())), 1, (255,0,255))
+    boolets = font.render("Bullets: {}".format(len(bullets.sprites())), 1, (255,0,255))
 
     screen.fill([0,0,0])
     screen.blit(background, (0, offset))
@@ -77,8 +89,11 @@ while True:
     bullets.update()
     bullets.draw(screen)
 
+    enemies.update()
+    enemies.draw(screen)
+
     screen.blit(rend, (0,0))
-    screen.blit(boolets, (0, 30))
+    screen.blit(boolets, (0, 20))
 
     #TODO: Make a smooth background transition
     #      Try to append a second background to the current one somehow
