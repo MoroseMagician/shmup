@@ -8,9 +8,3 @@ player = {
     "hyperbeam": 999,
     "hyperbomb": 100
 }
-
-enemy = {
-    "basic_enemy": 1,
-    "upgraded_enemy": 2,
-    "mega_enemy": 3
-}
