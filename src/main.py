@@ -7,7 +7,12 @@ import pygame
 import load_assets
 from random import randint
 
-def keyCheck(ship, keys, mods, speed = 2):
+spawncooldown = 0
+
+def keyCheck(ship, speed = 2):
+
+    keys = pygame.key.get_pressed()
+    mods = pygame.key.get_mods()
     
     shift = False
 
@@ -24,22 +29,38 @@ def keyCheck(ship, keys, mods, speed = 2):
     if keys[pygame.K_RIGHT] and ship.rect.x + ship.rect.width < width:
         ship.move_right(speed)
 
-    if keys[pygame.K_z]:
-        current = pygame.time.get_ticks()
-        if current - ship.cooldown >= ship.shotdelay:
-            if shift:
-                bullets.add(bullet.Bullet(height, ship.rect.x + ship.rect.width // 2 - 5, ship.rect.y))
-                bullets.add(bullet.Bullet(height, ship.rect.x + ship.rect.width // 2 + 5, ship.rect.y))
-            else:
-                bullets.add(bullet.Bullet(height, ship.rect.x + ship.rect.width, ship.rect.y))
-                bullets.add(bullet.Bullet(height, ship.rect.x, ship.rect.y))
+    if keys[pygame.K_a]:
+        shoot(ship, shift)
 
-            ship.cooldown = current
-
+    if keys[pygame.K_s]:
+        uitext["Beam"] = font.render("Beam: ACTIVE", 1, (255,255,255))
+    else:
+        uitext["Beam"] = font.render("Beam: INACTIVE", 1, (255,0,255))
+        
     if keys[pygame.K_ESCAPE]:
         sys.exit()
 
+def shoot(ship, shift):
+
+    current = pygame.time.get_ticks()
+
+    if current - ship.cooldown >= ship.shotdelay:
+        bullets.add(bullet.Bullet(height, ship.rect.x + ship.rect.width // 2, ship.rect.y))
+        ship.cooldown = current
+
+def spawn_enemies():
+    for i in range(3, 0, -1):
+        for n in range(100, width - 100, 50):
+            enemies.add(enemy.SmallEnemy((n, -i * 50), (0, 1), 0, 300 - 50 * i))
+
+def spawn_stragglers():
+    current = pygame.time.get_ticks()
+
+
+    enemies.add(enemy.DumbEnemy(1, randint(20, width - 20), height + 10))
+
 pygame.init()
+
 
 # 224x288 is the original arcade resolution for Galaga
 size = width, height = 224 * 3, 288 * 3
@@ -57,51 +78,56 @@ bullets = pygame.sprite.Group()
 stars = pygame.sprite.Group()
 enemies = pygame.sprite.Group()
 
-enemies.add(enemy.SmallEnemy((0, -170), (2, 2), randint(1, 5), 50))
-enemies.add(enemy.SmallEnemy((0, -130), (2, 2), randint(1, 5), 80))
-enemies.add(enemy.SmallEnemy((0, -90), (2, 2), randint(1, 5), 110))
-enemies.add(enemy.SmallEnemy((0, -50), (2, 2), randint(1, 5), 140))
-enemies.add(enemy.SmallEnemy((width, -170), (-2, 2), randint(1, 5), 170))
-enemies.add(enemy.SmallEnemy((width, -130), (-2, 2), randint(1, 5), 200))
-enemies.add(enemy.SmallEnemy((width, -90), (-2, 2), randint(1, 5), 230))
-enemies.add(enemy.SmallEnemy((width, -50), (-2, 2), randint(1, 5), 260))
+uitext = {}
 
+#spawn_enemies()
 
 while True:
 
     # Main game loop
-    #TODO: Clean up this fucking mess
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit()
 
-    keys = pygame.key.get_pressed()
-    mods = pygame.key.get_mods()
-    keyCheck(ship, keys, mods)
+    keyCheck(ship)
 
-    rend = font.render("FPS: {}".format(timer.get_fps()), 1, (255,0,255))
-    boolets = font.render("Bullets: {}".format(len(bullets.sprites())), 1, (255,0,255))
+    #if len(enemies) <= 0:
+        #spawn_enemies()
+    spawn_stragglers()
+
+    uitext["FPS"] =  font.render("FPS: {}".format(timer.get_fps()), 1, (255,255,255))
+    uitext["Bullets"] = font.render("Bullets: {}".format(len(bullets.sprites())), 1, (255,255,255))
+    uitext["Enemies"] = font.render("Enemies: {}".format(len(enemies.sprites())), 1, (255,255,255))
+    uitext["Respawns"] = font.render("Ship lives: {}".format(ship.respawns), 1, (255,255,255))
+
 
     screen.fill([0,0,0])
     screen.blit(background, (0, offset))
     screen.blit(ship.image, ship.rect)
 
+        
     bullets.update()
     bullets.draw(screen)
 
     enemies.update()
     enemies.draw(screen)
 
-    screen.blit(rend, (0,0))
-    screen.blit(boolets, (0, 20))
+    hits = pygame.sprite.groupcollide(bullets, enemies, True, True)
+    collision = pygame.sprite.spritecollide(ship, enemies, True)
+
+    if len(collision) == 1:
+        ship.explode()
 
     #TODO: Make a smooth background transition
     #      Try to append a second background to the current one somehow
     #      Find a way to do this without wasting resources
     if offset < -height * 2:
-        offset += 10
+        offset += 20
     else:
         offset = -height * 9
+
+    for i, t in enumerate(uitext):
+        screen.blit(uitext[t], (0, i * 20))
 
     pygame.display.flip()
 

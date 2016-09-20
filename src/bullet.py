@@ -8,7 +8,7 @@ class Bullet(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
 
         #self.image = load_image("{}.png".format(shotType)).convert()
-        self.image = pygame.Surface([3, 7]).convert()
+        self.image = pygame.Surface([5, 7]).convert()
         self.image.fill([255,255,0])
 
         self.rect = self.image.get_rect()

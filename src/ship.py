@@ -11,15 +11,18 @@ class Ship:
         self.speed = speed
 
         #Starting position
-        self.rect.y = int(0.9 * screenheight)
-        self.rect.x = screenwidth // 2 - self.rect.width // 2
+        self.startX = int(0.9 * screenheight)
+        self.startY = screenwidth // 2 - self.rect.width // 2
+        self.rect.y = self.startX
+        self.rect.x = self.startY
 
         self.hyperbombs = 0
         self.hyperbeams = 0
         self.shotType = "basic"
+        self.respawns = 3
 
         # 0.5 second shot cooldown
-        self.shotdelay = 300
+        self.shotdelay = 0
         self.cooldown = pygame.time.get_ticks()
 
     def move_left(self, modifier):
@@ -35,6 +38,10 @@ class Ship:
         self.rect.y += self.speed * modifier
 
     def explode(self):
-        None
+        self.rect.y = self.startX
+        self.rect.x = self.startY
+
+
+        self.respawns -= 1
 
 
