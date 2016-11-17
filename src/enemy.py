@@ -1,5 +1,6 @@
 import pygame
 import load_assets
+from random import randint
 
 class SmallEnemy(pygame.sprite.Sprite):
     def __init__(self, origin, movement, speed, stop):
@@ -48,8 +49,8 @@ class DumbEnemy(pygame.sprite.Sprite):
        
         pygame.sprite.Sprite.__init__(self)
 
-        #self.image = pygame.Surface([16, 16]).convert()
-        self.image = load_assets.load_image("enemy.png")
+        self.image = pygame.Surface([16, 16]).convert()
+        self.image.fill([126,255,255])
         self.rect = self.image.get_rect()
 
         self.rect.x = x
@@ -57,11 +58,19 @@ class DumbEnemy(pygame.sprite.Sprite):
         self.speed = speed
         self.killheight = killheight
 
+        self.horizontal_speed = 1
+        self.horizontal_step = 0
+
     def update(self):
         if self.rect.y >= self.killheight:
             self.kill()
         else:
             self.rect.y += self.speed
+            if self.horizontal_step > randint(0, 750):
+                self.horizontal_step = 0
+                self.horizontal_speed *= -1
+            self.rect.x += self.horizontal_speed
+            self.horizontal_step += 1
 
 
 

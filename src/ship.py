@@ -4,7 +4,6 @@ import bullet
 
 class Ship:
     def __init__(self, screenwidth, screenheight, speed):
-
         self.image = pygame.Surface([32, 32]).convert()
         self.image.fill([255,255,255])
         self.rect = pygame.rect.Rect(0, 0, 32, 32)
@@ -22,7 +21,7 @@ class Ship:
         self.respawns = 3
 
         # 0.5 second shot cooldown
-        self.shotdelay = 0
+        self.shotdelay = 300
         self.cooldown = pygame.time.get_ticks()
 
     def move_left(self, modifier):

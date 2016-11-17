@@ -7,7 +7,8 @@ import pygame
 import load_assets
 from random import randint
 
-spawncooldown = 0
+spawncooldown = 500
+last_spawn = pygame.time.get_ticks()
 
 def keyCheck(ship, speed = 2):
 
@@ -33,15 +34,18 @@ def keyCheck(ship, speed = 2):
         shoot(ship, shift)
 
     if keys[pygame.K_s]:
+        global beamactive 
+        beamactive = True
         uitext["Beam"] = font.render("Beam: ACTIVE", 1, (255,255,255))
     else:
+        global beamactive 
+        beamactive = False
         uitext["Beam"] = font.render("Beam: INACTIVE", 1, (255,0,255))
         
     if keys[pygame.K_ESCAPE]:
         sys.exit()
 
 def shoot(ship, shift):
-
     current = pygame.time.get_ticks()
 
     if current - ship.cooldown >= ship.shotdelay:
@@ -53,11 +57,12 @@ def spawn_enemies():
         for n in range(100, width - 100, 50):
             enemies.add(enemy.SmallEnemy((n, -i * 50), (0, 1), 0, 300 - 50 * i))
 
-def spawn_stragglers():
+def spawn_stragglers(last_spawn):
     current = pygame.time.get_ticks()
-
-
-    enemies.add(enemy.DumbEnemy(1, randint(20, width - 20), height + 10))
+    if current - last_spawn >= spawncooldown:
+        enemies.add(enemy.DumbEnemy(1, randint(20, width - 20), height + 10))
+        return current
+    return last_spawn
 
 pygame.init()
 
@@ -78,12 +83,14 @@ bullets = pygame.sprite.Group()
 stars = pygame.sprite.Group()
 enemies = pygame.sprite.Group()
 
+hyperbeam = bullet.HyperBeam(height)
+beamactive = False
+
 uitext = {}
 
 #spawn_enemies()
 
 while True:
-
     # Main game loop
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -91,9 +98,7 @@ while True:
 
     keyCheck(ship)
 
-    #if len(enemies) <= 0:
-        #spawn_enemies()
-    spawn_stragglers()
+    last_spawn = spawn_stragglers(last_spawn)
 
     uitext["FPS"] =  font.render("FPS: {}".format(timer.get_fps()), 1, (255,255,255))
     uitext["Bullets"] = font.render("Bullets: {}".format(len(bullets.sprites())), 1, (255,255,255))
@@ -105,14 +110,19 @@ while True:
     screen.blit(background, (0, offset))
     screen.blit(ship.image, ship.rect)
 
-        
     bullets.update()
     bullets.draw(screen)
 
     enemies.update()
     enemies.draw(screen)
 
+    hyperbeam.update(ship.rect.x + 8, ship.rect.y - height, beamactive)
+
+    if beamactive:
+        screen.blit(hyperbeam.image, hyperbeam.rect)
+
     hits = pygame.sprite.groupcollide(bullets, enemies, True, True)
+    beamhits = pygame.sprite.spritecollide(hyperbeam, enemies, True, False)
     collision = pygame.sprite.spritecollide(ship, enemies, True)
 
     if len(collision) == 1:
