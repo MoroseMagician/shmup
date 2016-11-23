@@ -11,7 +11,6 @@ spawncooldown = 500
 last_spawn = pygame.time.get_ticks()
 
 def keyCheck(ship, speed = 2):
-
     keys = pygame.key.get_pressed()
     mods = pygame.key.get_mods()
     
@@ -37,6 +36,7 @@ def keyCheck(ship, speed = 2):
         global beamactive 
         beamactive = True
         uitext["Beam"] = font.render("Beam: ACTIVE", 1, (255,255,255))
+        shoot_hyperbeam()
     else:
         global beamactive 
         beamactive = False
@@ -51,6 +51,9 @@ def shoot(ship, shift):
     if current - ship.cooldown >= ship.shotdelay:
         bullets.add(bullet.Bullet(height, ship.rect.x + ship.rect.width // 2, ship.rect.y))
         ship.cooldown = current
+
+def shoot_hyperbeam():
+    None
 
 def spawn_enemies():
     for i in range(3, 0, -1):
@@ -90,13 +93,65 @@ uitext = {}
 
 #spawn_enemies()
 
-while True:
-    # Main game loop
+# Stuff that's only used in the menu loop
+menu_logo = pygame.sprite.Sprite()
+menu_logo.image = load_assets.load_image("logo.png").convert()
+menu_font = load_assets.load_font("PTM55FT.ttf", 32)
+cursor = pygame.Surface((20, 20))
+cursor_position = 0
+menu_element_positions = [500, 550, 600]
+
+menu_loop = True
+while menu_loop:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit()
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_DOWN:
+                cursor_position = (cursor_position + 1) % 3
+            elif event.key == pygame.K_UP:
+                cursor_position -= 1
+                if cursor_position == -1:
+                    cursor_position = 2
+            elif event.key == pygame.K_RETURN:
+                if cursor_position == 0:
+                    menu_loop = False
+                elif cursor_position == 1:
+                    sys.exit()
+                else:
+                    #TODO: Add options?
+                    pass
 
+    screen.fill([0,0,0])
+
+    text = []
+    text.append(menu_font.render("START", 1, (255, 255, 255)))
+    text.append(menu_font.render("QUIT", 1, (255, 255, 255)))
+    text.append(menu_font.render("OPTIONS", 1, (255, 255, 255)))
+
+    for i, t in enumerate(text):
+        screen.blit(t, (width // 2 - 50, menu_element_positions[i]))
+    pygame.draw.polygon(cursor, (255, 0, 0), [(0, 0), (0, 20), (20, 10)])
+
+    #Cursor position debug
+    # tbla = menu_font.render("pos: {}".format(cursor_position), 1, (255, 255, 255))
+    # screen.blit(tbla, (0, height - 100))
+
+    screen.blit(cursor, (width // 2 - 100, menu_element_positions[cursor_position] + 4))
+    screen.blit(menu_logo.image, (10, 100))
+    pygame.display.set_caption("Main Menu")
+    
+
+    pygame.display.flip()
+    timer.tick(60)
+
+while True:
+    # This is the main game loop
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            sys.exit()
     keyCheck(ship)
+    pygame.display.set_caption("Untitled SHMUP!")
 
     last_spawn = spawn_stragglers(last_spawn)
 
@@ -104,7 +159,6 @@ while True:
     uitext["Bullets"] = font.render("Bullets: {}".format(len(bullets.sprites())), 1, (255,255,255))
     uitext["Enemies"] = font.render("Enemies: {}".format(len(enemies.sprites())), 1, (255,255,255))
     uitext["Respawns"] = font.render("Ship lives: {}".format(ship.respawns), 1, (255,255,255))
-
 
     screen.fill([0,0,0])
     screen.blit(background, (0, offset))
@@ -124,6 +178,8 @@ while True:
     hits = pygame.sprite.groupcollide(bullets, enemies, True, True)
     beamhits = pygame.sprite.spritecollide(hyperbeam, enemies, True, False)
     collision = pygame.sprite.spritecollide(ship, enemies, True)
+
+    spawncooldown -= len(beamhits)
 
     if len(collision) == 1:
         ship.explode()
